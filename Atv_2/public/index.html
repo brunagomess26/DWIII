@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista de Compras</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0e0c;
+      --surface: #1a1814;
+      --surface2: #232018;
+      --border: #2e2b24;
+      --accent: #e8c96d;
+      --accent2: #c4a84f;
+      --text: #f0ece2;
+      --muted: #7a7468;
+      --danger: #c0614a;
+      --danger2: #a0503c;
+      --success: #6aaa7c;
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      padding: 40px 20px 80px;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(232,201,109,0.08) 0%, transparent 60%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e8c96d' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* HEADER */
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+      position: relative;
+    }
+
+    .header::before {
+      content: '';
+      display: block;
+      width: 48px;
+      height: 2px;
+      background: var(--accent);
+      margin: 0 auto 20px;
+      border-radius: 2px;
+    }
+
+    .header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 6vw, 3.2rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      line-height: 1.1;
+    }
+
+    .header h1 span {
+      color: var(--accent);
+    }
+    
+    /* FORM CARD */
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .form-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+
+    .form-label {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 160px;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .input-group {
+      position: relative;
+    }
+
+    .input-group .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 0.85rem;
+      pointer-events: none;
+    }
+
+    input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 13px 14px 13px 38px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    input::placeholder { color: var(--muted); }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(232,201,109,0.1);
+    }
+
+    .btn-add {
+      width: 100%;
+      padding: 13px 20px;
+      background: var(--accent);
+      color: #0f0e0c;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-add:hover {
+      background: #f0d47a;
+      box-shadow: 0 4px 20px rgba(232,201,109,0.25);
+    }
+
+    .btn-add:active { transform: scale(0.98); }
+
+    .btn-add.editing {
+      background: var(--success);
+    }
+
+    /* TOTAL */
+    .total-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+    }
+
+    .total-bar span:first-child {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .total-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* LIST */
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+
+    .list-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    .item-count {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    #list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      animation: slideIn 0.3s ease both;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-12px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .item:hover {
+      border-color: #3a3730;
+      transform: translateX(2px);
+    }
+
+    .item.editing-item {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(232,201,109,0.1);
+    }
+
+    .item-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .item-bullet {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+
+    .item-info { min-width: 0; }
+
+    .item-name {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .item-price {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 2px;
+      font-family: 'Playfair Display', serif;
+    }
+
+    .item-price strong {
+      color: var(--accent);
+      font-size: 0.95rem;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .btn-icon:hover { color: var(--text); border-color: #3a3730; }
+
+    .btn-icon.edit:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: rgba(232,201,109,0.08);
+    }
+
+    .btn-icon.delete:hover {
+      color: var(--danger);
+      border-color: var(--danger);
+      background: rgba(192,97,74,0.08);
+    }
+
+    /* EMPTY STATE */
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .empty-icon {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+      opacity: 0.4;
+    }
+
+    .empty p {
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 12px 22px;
+      font-size: 0.85rem;
+      color: var(--text);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      z-index: 100;
+      white-space: nowrap;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { border-color: var(--success); color: var(--success); }
+    .toast.error   { border-color: var(--danger);  color: var(--danger); }
+
+    /* LOADING */
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(15,14,12,0.3);
+      border-top-color: #0f0e0c;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 480px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Lista de <span>Compras</span></h1>
+  </div>
+
+  <div class="form-card">
+    <label class="form-label">Adicionar produto</label>
+    <div class="form-row">
+      <div class="input-group">
+        <span class="input-icon">🛒</span>
+        <input id="name" type="text" placeholder="Nome do produto" />
+      </div>
+      <div class="input-group">
+        <span class="input-icon">R$</span>
+        <input id="price" type="number" step="0.01" placeholder="0,00" style="padding-left:38px" />
+      </div>
+    </div>
+    <button class="btn-add" id="btn-add" onclick="handleSubmit()">
+      <span id="btn-text">+ Adicionar Produto</span>
+    </button>
+  </div>
+
+  <div class="total-bar">
+    <span>Total da lista</span>
+    <span class="total-value" id="total">R$ 0,00</span>
+  </div>
+
+  <div class="list-header">
+    <span class="list-title">Itens da lista</span>
+    <span class="item-count" id="count">0 itens</span>
+  </div>
+
+  <ul id="list"></ul>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = 'http://localhost:3000/api/items';
+  let editId = null;
+
+  async function loadItems() {
+    try {
+      const res = await fetch(API);
+      const items = await res.json();
+      renderItems(items);
+    } catch {
+      showToast('Erro ao conectar com o servidor', 'error');
+    }
+  }
+
+  function renderItems(items) {
+    const list = document.getElementById('list');
+    const count = document.getElementById('count');
+    const total = document.getElementById('total');
+
+    count.textContent = `${items.length} ${items.length === 1 ? 'item' : 'itens'}`;
+
+    const sum = items.reduce((acc, i) => acc + i.price, 0);
+    total.textContent = `R$ ${sum.toFixed(2).replace('.', ',')}`;
+
+    if (items.length === 0) {
+      list.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">🛍️</div>
+          <p>Sua lista está vazia.<br>Adicione o primeiro produto acima!</p>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = '';
+    items.forEach((item, i) => {
+      const li = document.createElement('li');
+      li.className = 'item' + (editId === item._id ? ' editing-item' : '');
+      li.style.animationDelay = `${i * 0.05}s`;
+      li.innerHTML = `
+        <div class="item-left">
+          <div class="item-bullet"></div>
+          <div class="item-info">
+            <div class="item-name">${item.name}</div>
+            <div class="item-price">Valor: <strong>R$ ${item.price.toFixed(2).replace('.', ',')}</strong></div>
+          </div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-icon edit" title="Editar" onclick="editItem('${item._id}','${item.name}',${item.price})">✏️</button>
+          <button class="btn-icon delete" title="Excluir" onclick="deleteItem('${item._id}')">🗑️</button>
+        </div>`;
+      list.appendChild(li);
+    });
+  }
+
+  async function handleSubmit() {
+    const name  = document.getElementById('name').value.trim();
+    const price = parseFloat(document.getElementById('price').value);
+
+    if (!name || isNaN(price) || price < 0) {
+      showToast('Preencha nome e valor corretamente', 'error');
+      return;
+    }
+
+    const btn  = document.getElementById('btn-add');
+    const text = document.getElementById('btn-text');
+    text.innerHTML = '<span class="spinner"></span>';
+    btn.disabled = true;
+
+    try {
+      if (editId) {
+        await fetch(`${API}/${editId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, price })
+        });
+        showToast('Produto atualizado!', 'success');
+        editId = null;
+        btn.classList.remove('editing');
+      } else {
+        await fetch(API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, price })
+        });
+        showToast('Produto adicionado!', 'success');
+      }
+
+      document.getElementById('name').value = '';
+      document.getElementById('price').value = '';
+      await loadItems();
+    } catch {
+      showToast('Erro ao salvar produto', 'error');
+    } finally {
+      text.textContent = editId ? '✓ Salvar Edição' : '+ Adicionar Produto';
+      btn.disabled = false;
+    }
+  }
+
+  function editItem(id, name, price) {
+    editId = id;
+    document.getElementById('name').value = name;
+    document.getElementById('price').value = price;
+    document.getElementById('btn-text').textContent = '✓ Salvar Edição';
+    document.getElementById('btn-add').classList.add('editing');
+    document.getElementById('name').focus();
+    loadItems();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function deleteItem(id) {
+    if (!confirm('Deseja excluir este produto?')) return;
+    try {
+      await fetch(`${API}/${id}`, { method: 'DELETE' });
+      showToast('Produto removido', 'success');
+      if (editId === id) {
+        editId = null;
+        document.getElementById('name').value = '';
+        document.getElementById('price').value = '';
+        document.getElementById('btn-text').textContent = '+ Adicionar Produto';
+        document.getElementById('btn-add').classList.remove('editing');
+      }
+      await loadItems();
+    } catch {
+      showToast('Erro ao excluir produto', 'error');
+    }
+  }
+
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // Enter para submeter
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleSubmit();
+  });
+
+  loadItems();
+</script>
+</body>
+</html>
